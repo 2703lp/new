@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!-- lang="zh-CN"：声明页面语言为简体中文，有利于浏览器渲染与搜索引擎识别 -->
+<html lang="zh-CN">
+<head>
+    <!-- 声明文档字符编码为 UTF-8，保证中文正常显示 -->
+    <meta charset="UTF-8">
+    <!-- 响应式视口设置：让页面在手机等移动设备上也能正常缩放显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 网页标题：显示在浏览器标签页上 -->
+    <title>个人名片 | 张小明</title>
+
+    <!-- 引入外部样式表：HTML 结构与 CSS 样式分离书写 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 名片主体区域：整张卡片 -->
+    <main class="card-wrap">
+        <article class="card">
+
+            <!-- ========== 头像区域 ========== -->
+            <!-- 头像容器：通过 CSS 设置为圆形 -->
+            <header class="card-header">
+                <div class="avatar">明</div>
+                <!-- 如需使用真实头像图片，可将上方 div 替换为：
+                     <img class="avatar" src="avatar.jpg" alt="张小明的头像"> -->
+            </header>
+
+            <!-- ========== 个人信息区域 ========== -->
+            <section class="card-info">
+                <!-- 姓名 -->
+                <h1 class="name">张小明</h1>
+                <!-- 职位 -->
+                <p class="job-title">前端开发工程师</p>
+                <!-- 一句话简介（可选点缀，保持简约） -->
+                <p class="intro">热爱编码与设计，专注于构建简洁优雅的 Web 体验。</p>
+            </section>
+
+            <!-- ========== 联系方式区域 ========== -->
+            <ul class="contact-list">
+                <!-- 电话 -->
+                <li class="contact-item">
+                    <span class="icon" aria-hidden="true">
+                        <!-- 内联 SVG 小图标：电话 -->
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/>
+                        </svg>
+                    </span>
+                    <a href="tel:13800138000">138-0013-8000</a>
+                </li>
+
+                <!-- 邮箱 -->
+                <li class="contact-item">
+                    <span class="icon" aria-hidden="true">
+                        <!-- 内联 SVG 小图标：邮件 -->
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                    </span>
+                    <a href="mailto:zhangxm@example.com">zhangxm@example.com</a>
+                </li>
+
+                <!-- 微信 -->
+                <li class="contact-item">
+                    <span class="icon" aria-hidden="true">
+                        <!-- 内联 SVG 小图标：微信 -->
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M8.7 4C4.9 4 2 6.6 2 9.8c0 1.8.9 3.4 2.4 4.5l-.6 1.9 2.2-1.1c.5.1 1 .2 1.5.2h.4c-.1-.4-.2-.8-.2-1.3 0-3 2.9-5.4 6.4-5.4h.4C13.9 6 11.6 4 8.7 4zM6.5 7.3c.4 0 .8.3.8.8s-.3.8-.8.8-.8-.4-.8-.8.4-.8.8-.8zm4.4 0c.4 0 .8.3.8.8s-.3.8-.8.8-.8-.4-.8-.8.3-.8.8-.8zM15.6 10c-3.2 0-5.8 2.1-5.8 4.8s2.6 4.8 5.8 4.8c.5 0 1-.1 1.4-.2l1.9.9-.5-1.6c1.3-.9 2.1-2.3 2.1-3.9 0-2.7-2.6-4.8-5.8-4.8h.9zm-2.2 2.6c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zm3.6 0c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7z"/>
+                        </svg>
+                    </span>
+                    <span class="text">微信：zhangxm_dev</span>
+                </li>
+            </ul>
+
+        </article>
+    </main>
+
+</body>
+</html>
