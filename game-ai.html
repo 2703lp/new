@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发射方块 · 单词Boss</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            background: #0b0f1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        .game-container {
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid #2a3b5e;
+        }
+        canvas {
+            display: block;
+            width: 1200px;
+            height: 700px;
+            background: radial-gradient(circle at 30% 20%, #1a2333, #0b0f1a);
+            cursor: crosshair;
+        }
+        .info-panel {
+            position: absolute;
+            top: 18px;
+            right: 25px;
+            color: #b9d0ff;
+            background: rgba(12, 20, 35, 0.75);
+            backdrop-filter: blur(4px);
+            padding: 12px 22px;
+            border-radius: 60px;
+            border: 1px solid #36507e;
+            font-weight: 500;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            gap: 28px;
+            pointer-events: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        .info-panel span { color: #e1ecff; font-weight: 700; margin-left: 6px; }
+        .hint {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #7d92bb;
+            font-size: 0.85rem;
+            background: #0d1422cc;
+            padding: 6px 18px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+            border: 1px solid #2c3f60;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .clear-btn, .boss-btn {
+            position: absolute;
+            bottom: 20px;
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 10px 26px;
+            border-radius: 50px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            z-index: 10;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .clear-btn {
+            right: 25px;
+            background: #ff4d6d;
+            box-shadow: 0 6px 0 #9e1e3a, 0 8px 18px rgba(0, 0, 0, 0.4);
+            border: 1px solid #ff8aa0;
+        }
+        .clear-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #9e1e3a, 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+        .clear-btn:hover { background: #ff617d; }
+        .boss-btn {
+            right: 170px;
+            background: #6c5ce7;
+            box-shadow: 0 6px 0 #4834a8, 0 8px 18px rgba(0, 0, 0, 0.4);
+            border: 1px solid #a29bfe;
+        }
+        .boss-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #4834a8, 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+        .boss-btn:hover { background: #7d6ff0; }
+        .boss-btn.active {
+            background: #ff4d6d;
+            box-shadow: 0 6px 0 #9e1e3a, 0 8px 18px rgba(0, 0, 0, 0.4);
+            border: 1px solid #ff8aa0;
+        }
+        .boss-btn.active:hover { background: #ff617d; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <canvas id="gameCanvas" width="1200" height="700"></canvas>
+    <div class="info-panel">
+        <div>📦 方块: <span id="blockCount">0</span></div>
+        <div>👾 击败Boss: <span id="bossCount">0</span></div>
+    </div>
+    <div class="hint">按 0-9 / A-Z (区分大小写) 发射 · 长按连续发射 · 鼠标控制方向</div>
+    <button class="boss-btn" id="bossBtn">👾 召唤单词Boss</button>
+    <button class="clear-btn" id="clearBtn">🧹 清屏</button>
+</div>
+
+<script>
+    (function() {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const blockCountSpan = document.getElementById('blockCount');
+        const bossCountSpan = document.getElementById('bossCount');
+        const clearBtn = document.getElementById('clearBtn');
+        const bossBtn = document.getElementById('bossBtn');
+
+        const CW = 1200, CH = 700;
+        const LAUNCH_X = 6;
+        const LAUNCH_Y = CH / 2;
+
+        // ========== 物理参数 ==========
+        const GRAVITY = 0.45;
+        const AIR_DAMP = 0.995;
+        const GROUND_FRICTION = 0.92;
+        const BLOCK_FRICTION = 0.85;
+        const RESTITUTION_GROUND = 0.45;
+        const RESTITUTION_BLOCK = 0.30;
+        const RESTITUTION_SIDE = 0.20;
+        const MAX_SPEED = 28;
+        const MAX_LAUNCH_SPEED = 26.0;
+        const MIN_HORIZONTAL_RATIO = 0.55;
+        const LEFT_ZONE = 150;
+        const POSITION_CORRECTION = 1.0;
+        const SLOP = 0.1;
+
+        const BLOCK_W = 42, BLOCK_H = 42;
+        const BLOCK_MASS = 1.0;
+
+        // 支撑检测参数
+        const SUPPORT_THRESHOLD = 0.5;
+        const SUPPORT_GRAVITY = 0.6;
+        const SLIDE_FORCE = 0.35;
+
+        // ========== 单词Boss参数 ==========
+        const BOSS_W = 240;
+        const BOSS_H = 100;
+        const BOSS_Y = CH / 2;
+        const BOSS_START_X = CW + BOSS_W / 2 + 10;
+        const BOSS_SLIDE_SPEED = MAX_LAUNCH_SPEED / 50;
+
+        const WORD_POOL = [
+            'CAT', 'DOG', 'SUN', 'SKY', 'CAR', 'BUS', 'MAP', 'KEY',
+            'CODE', 'GAME', 'FIRE', 'MOON', 'STAR', 'WIND', 'RAIN',
+            'CLOUD', 'LIGHT', 'MUSIC', 'WORLD', 'SPACE', 'POWER',
+            'DREAM', 'HAPPY', 'MAGIC', 'TIGER', 'RIVER', 'OCEAN',
+            'ROBOT', 'PIANO', 'GREEN', 'SWEET', 'BERRY', 'CLOCK'
+        ];
+
+        // ========== 全局状态 ==========
+        let blocks = [];
+        let mouseX = CW * 0.9;
+        let mouseY = CH * 0.4;
+        let removingMode = false;
+        let removeLeft = 0;
+        let removeFrameCounter = 0;
+
+        // 空闲自动消除
+        const IDLE_THRESHOLD_FRAMES = 180;
+        let idleFrames = 0;
+        let idleClearing = false;
+        let idleClearCooldown = 0;
+
+        // 长按判定
+        const HOLD_THRESHOLD = 15;
+        const REPEAT_DELAY = 6;
+        const heldKeys = new Map();
+
+        // Boss
+        let boss = null;
+        let bossMode = false;
+        let bossDefeatedCount = 0;
+
+        // 鲜艳颜色池（50 色）
+        const COLORS = [
+            '#FF2E63', '#FF6B6B', '#FF9F1C', '#FFD93D', '#F9F871',
+            '#4ECDC4', '#1EFFBC', '#2AF598', '#00E676', '#A8FF78',
+            '#6C5CE7', '#A66CFF', '#D65DB1', '#FF6F91', '#FF9671',
+            '#3B82F6', '#00B4D8', '#48CAE4', '#90E0EF', '#ADE8F4',
+            '#F72585', '#B5179E', '#7209B7', '#560BAD', '#480CA8',
+            '#FF4D6D', '#FF758F', '#FF8FA3', '#FFB3C1', '#FFCCD5',
+            '#06D6A0', '#118AB2', '#073B4C', '#EF476F', '#FFD166',
+            '#FB5607', '#FFBE0B', '#FF006E', '#8338EC', '#3A86FF',
+            '#FF5A5F', '#FF8C42', '#FFB703', '#8AC926', '#1982C4',
+            '#E63946', '#F1FAEE', '#A8DADC', '#457B9D', '#1D3557'
+        ];
+
+        // 根据字符获取固定颜色（相同字符 → 相同颜色）
+        function getColorForChar(char) {
+            const code = char.charCodeAt(0);
+            const index = (code * 31 + 17) % COLORS.length;
+            return COLORS[index];
+        }
+
+        const charColorCache = new Map();
+        function getCachedColor(char) {
+            if (!charColorCache.has(char)) {
+                charColorCache.set(char, getColorForChar(char));
+            }
+            return charColorCache.get(char);
+        }
+
+        function updateCounter() {
+            blockCountSpan.textContent = blocks.length;
+        }
+
+        function updateBossCounter() {
+            bossCountSpan.textContent = bossDefeatedCount;
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = Math.min(CW, Math.max(0, (e.clientX - rect.left) * scaleX));
+            mouseY = Math.min(CH, Math.max(0, (e.clientY - rect.top) * scaleY));
+        });
+
+        // ---------- 发射方块 ----------
+        function launchBlock(char) {
+            if (!char || char.length !== 1) return;
+
+            idleFrames = 0;
+            idleClearing = false;
+            idleClearCooldown = 0;
+
+            let dx = mouseX - LAUNCH_X;
+            let dy = mouseY - LAUNCH_Y;
+            if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) { dx = 1; dy = 0; }
+
+            const len = Math.hypot(dx, dy);
+            let dirX = dx / len;
+            let dirY = dy / len;
+
+            if (Math.abs(dirX) < MIN_HORIZONTAL_RATIO) {
+                const signX = dirX >= 0 ? 1 : -1;
+                dirX = signX * MIN_HORIZONTAL_RATIO;
+                const newLen = Math.hypot(dirX, dirY);
+                dirX /= newLen;
+                dirY /= newLen;
+            }
+
+            const speed = MAX_LAUNCH_SPEED;
+            const vx = dirX * speed;
+            const vy = dirY * speed;
+            const color = getCachedColor(char);
+
+            blocks.push({
+                char, x: LAUNCH_X, y: LAUNCH_Y,
+                vx, vy, w: BLOCK_W, h: BLOCK_H,
+                color: color, mass: BLOCK_MASS, bounceCount: 0
+            });
+
+            if (!removingMode && blocks.length >= 200) {
+                removingMode = true;
+                removeLeft = 200;
+                removeFrameCounter = 0;
+            }
+
+            updateCounter();
+        }
+
+        // ---------- 键盘事件 ----------
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (/^[0-9a-zA-Z]$/.test(key)) {
+                e.preventDefault();
+                if (!heldKeys.has(key)) {
+                    heldKeys.set(key, {
+                        char: key,
+                        holdFrames: 0,
+                        isLongPress: false,
+                        cooldown: 0
+                    });
+                }
+            }
+            if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key;
+            if (/^[0-9a-zA-Z]$/.test(key)) {
+                const state = heldKeys.get(key);
+                if (state && !state.isLongPress) {
+                    launchBlock(key);
+                }
+                heldKeys.delete(key);
+            }
+        });
+
+        window.addEventListener('blur', () => heldKeys.clear());
+
+        function updateAutoFire() {
+            if (heldKeys.size === 0) return;
+            heldKeys.forEach((state) => {
+                if (!state.isLongPress) {
+                    state.holdFrames++;
+                    if (state.holdFrames >= HOLD_THRESHOLD) {
+                        state.isLongPress = true;
+                        state.cooldown = 0;
+                        launchBlock(state.char);
+                    }
+                } else {
+                    state.cooldown++;
+                    if (state.cooldown >= REPEAT_DELAY) {
+                        state.cooldown = 0;
+                        launchBlock(state.char);
+                    }
+                }
+            });
+        }
+
+        // ---------- 清屏 ----------
+        clearBtn.addEventListener('click', () => {
+            blocks = [];
+            removingMode = false;
+            removeLeft = 0;
+            removeFrameCounter = 0;
+            idleFrames = 0;
+            idleClearing = false;
+            idleClearCooldown = 0;
+            updateCounter();
+        });
+
+        // ---------- Boss ----------
+        function createBoss() {
+            const word = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
+            return {
+                word: word,
+                hitStatus: new Array(word.length).fill(false),
+                x: BOSS_START_X,
+                y: BOSS_Y,
+                w: BOSS_W,
+                h: BOSS_H,
+                slidingIn: true,
+                color: '#555555'
+            };
+        }
+
+        bossBtn.addEventListener('click', () => {
+            if (!bossMode) {
+                // ★ 召唤 Boss 时清空场景中的方块
+                blocks = [];
+                removingMode = false;
+                removeLeft = 0;
+                removeFrameCounter = 0;
+                idleFrames = 0;
+                idleClearing = false;
+                idleClearCooldown = 0;
+                updateCounter();
+
+                bossMode = true;
+                boss = createBoss();
+                bossBtn.textContent = '👾 关闭Boss模式';
+                bossBtn.classList.add('active');
+            } else {
+                bossMode = false;
+                boss = null;
+                bossBtn.textContent = '👾 召唤单词Boss';
+                bossBtn.classList.remove('active');
+            }
+        });
+
+        function updateBoss() {
+            if (!boss) return;
+            boss.x -= BOSS_SLIDE_SPEED;
+            if (boss.slidingIn && boss.x + boss.w / 2 < CW) {
+                boss.slidingIn = false;
+            }
+            if (boss.x + boss.w / 2 < 0) {
+                boss = createBoss();
+            }
+        }
+
+        function checkBossCollision() {
+            if (!boss) return;
+            if (boss.x - boss.w / 2 > CW) return;
+
+            for (let i = blocks.length - 1; i >= 0; i--) {
+                const b = blocks[i];
+                const dx = Math.abs(b.x - boss.x);
+                const dy = Math.abs(b.y - boss.y);
+
+                if (dx < (b.w + boss.w) / 2 && dy < (b.h + boss.h) / 2) {
+                    const hitChar = b.char.toUpperCase();
+                    let matched = false;
+
+                    for (let k = 0; k < boss.word.length; k++) {
+                        if (!boss.hitStatus[k] && boss.word[k] === hitChar) {
+                            boss.hitStatus[k] = true;
+                            matched = true;
+                            blocks.splice(i, 1);
+                            updateCounter();
+                            break;
+                        }
+                    }
+
+                    if (!matched) {
+                        const overlapX = (b.w + boss.w) / 2 - dx;
+                        const overlapY = (b.h + boss.h) / 2 - dy;
+                        if (overlapX < overlapY) {
+                            const sign = b.x > boss.x ? 1 : -1;
+                            b.x += sign * overlapX;
+                            b.vx = Math.abs(b.vx) * 0.5 * sign;
+                        } else {
+                            const sign = b.y > boss.y ? 1 : -1;
+                            b.y += sign * overlapY;
+                            b.vy = Math.abs(b.vy) * 0.5 * sign;
+                        }
+                    }
+                }
+            }
+
+            if (boss && boss.hitStatus.every(v => v === true)) {
+                bossDefeatedCount++;
+                updateBossCounter();
+                boss = createBoss();
+            }
+        }
+
+        // ---------- 碰撞冲量 ----------
+        function resolveCollisionImpulse(a, b, nx, ny) {
+            const rvx = b.vx - a.vx;
+            const rvy = b.vy - a.vy;
+            const velAlongNormal = rvx * nx + rvy * ny;
+            if (velAlongNormal > 0) return;
+
+            const e = RESTITUTION_BLOCK * Math.pow(0.85, a.bounceCount + b.bounceCount);
+            const invMassA = 1 / a.mass;
+            const invMassB = 1 / b.mass;
+            const j = -(1 + e) * velAlongNormal / (invMassA + invMassB);
+
+            const impulseX = j * nx;
+            const impulseY = j * ny;
+
+            a.vx -= impulseX * invMassA;
+            a.vy -= impulseY * invMassA;
+            b.vx += impulseX * invMassB;
+            b.vy += impulseY * invMassB;
+
+            const rvx2 = b.vx - a.vx;
+            const rvy2 = b.vy - a.vy;
+            const tx = rvx2 - (rvx2 * nx + rvy2 * ny) * nx;
+            const ty = rvy2 - (rvx2 * nx + rvy2 * ny) * ny;
+            const tLen = Math.hypot(tx, ty);
+
+            if (tLen > 0.001) {
+                const tnx = tx / tLen;
+                const tny = ty / tLen;
+                let jt = -(rvx2 * tnx + rvy2 * tny) / (invMassA + invMassB);
+                const maxFriction = BLOCK_FRICTION * Math.abs(j);
+                jt = Math.max(-maxFriction, Math.min(maxFriction, jt));
+                a.vx -= jt * tnx * invMassA;
+                a.vy -= jt * tny * invMassA;
+                b.vx += jt * tnx * invMassB;
+                b.vy += jt * tny * invMassB;
+            }
+
+            a.bounceCount++;
+            b.bounceCount++;
+        }
+
+        // ---------- 支撑检测 ----------
+        function getSupportInfo(block) {
+            const bottom = block.y + block.h / 2;
+            const left = block.x - block.w / 2;
+            const right = block.x + block.w / 2;
+            const sampleStep = 3;
+
+            const samples = [];
+            for (let sx = left; sx <= right; sx += sampleStep) {
+                samples.push(sx);
+            }
+
+            let supportedCount = 0;
+            let supportedXSum = 0;
+
+            for (const sx of samples) {
+                let hasSupport = false;
+
+                if (bottom >= CH - 0.5) {
+                    hasSupport = true;
+                }
+
+                if (!hasSupport) {
+                    for (const other of blocks) {
+                        if (other === block) continue;
+                        const otherTop = other.y - other.h / 2;
+                        const otherLeft = other.x - other.w / 2;
+                        const otherRight = other.x + other.w / 2;
+
+                        if (sx >= otherLeft && sx <= otherRight) {
+                            const gap = otherTop - bottom;
+                            if (gap >= -2 && gap <= 3) {
+                                hasSupport = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (hasSupport) {
+                    supportedCount++;
+                    supportedXSum += sx;
+                }
+            }
+
+            const totalSamples = samples.length;
+            const totalSupport = totalSamples > 0 ? supportedCount / totalSamples : 0;
+            const supportCenterX = supportedCount > 0 ? supportedXSum / supportedCount : block.x;
+
+            return { totalSupport, supportCenterX, supportedCount, totalSamples };
+        }
+
+        // ---------- 物理更新 ----------
+        function updatePhysics() {
+            for (let b of blocks) {
+                b.vy += GRAVITY;
+                b.vx *= AIR_DAMP;
+                b.vy *= AIR_DAMP;
+
+                if (b.x < LEFT_ZONE && b.vx < 0) b.vx *= 0.82;
+
+                const sp = Math.hypot(b.vx, b.vy);
+                if (sp > MAX_SPEED) {
+                    b.vx = (b.vx / sp) * MAX_SPEED;
+                    b.vy = (b.vy / sp) * MAX_SPEED;
+                }
+
+                b.x += b.vx;
+                b.y += b.vy;
+
+                if (b.x - b.w / 2 < 0) { b.x = b.w / 2; b.vx = Math.abs(b.vx) * 0.1; }
+                if (b.x + b.w / 2 > CW) { b.x = CW - b.w / 2; b.vx = -b.vx * RESTITUTION_SIDE; b.vy *= 0.9; }
+                if (b.y - b.h / 2 < 0) { b.y = b.h / 2; b.vy = -b.vy * RESTITUTION_SIDE; b.vx *= 0.9; }
+                if (b.y + b.h / 2 > CH) {
+                    b.y = CH - b.h / 2;
+                    b.vy = -b.vy * RESTITUTION_GROUND;
+                    b.vx *= GROUND_FRICTION;
+                    if (Math.abs(b.vy) < 0.25) b.vy = 0;
+                    if (Math.abs(b.vx) < 0.1) b.vx = 0;
+                }
+            }
+
+            const iterations = 8;
+            for (let iter = 0; iter < iterations; iter++) {
+                for (let i = 0; i < blocks.length; i++) {
+                    for (let j = i + 1; j < blocks.length; j++) {
+                        const a = blocks[i], b = blocks[j];
+                        const dx = b.x - a.x, dy = b.y - a.y;
+                        const halfW = (a.w + b.w) / 2, halfH = (a.h + b.h) / 2;
+                        const overlapX = halfW - Math.abs(dx);
+                        const overlapY = halfH - Math.abs(dy);
+
+                        const NEAR_THRESHOLD = 4;
+                        if (overlapX > -NEAR_THRESHOLD && overlapY > -NEAR_THRESHOLD &&
+                            overlapX < 0 && overlapY < 0) {
+                            const distX = Math.abs(dx) - halfW;
+                            const distY = Math.abs(dy) - halfH;
+                            if (distX < NEAR_THRESHOLD && distY < NEAR_THRESHOLD) {
+                                const dist = Math.hypot(dx, dy);
+                                if (dist > 0.01) {
+                                    const pullX = (dx / dist) * 0.08;
+                                    const pullY = (dy / dist) * 0.08;
+                                    a.x += pullX;
+                                    a.y += pullY;
+                                    b.x -= pullX;
+                                    b.y -= pullY;
+                                }
+                            }
+                        }
+
+                        if (overlapX > 0 && overlapY > 0) {
+                            let nx = 0, ny = 0, overlap;
+
+                            if (overlapY < overlapX * 1.6) {
+                                ny = dy > 0 ? 1 : -1;
+                                overlap = overlapY;
+                            } else {
+                                nx = dx > 0 ? 1 : -1;
+                                overlap = overlapX;
+                            }
+
+                            const totalInvMass = 1 / a.mass + 1 / b.mass;
+                            const correctionMag = Math.max(overlap - SLOP, 0) * POSITION_CORRECTION;
+                            const corrA = correctionMag * (1 / a.mass) / totalInvMass;
+                            const corrB = correctionMag * (1 / b.mass) / totalInvMass;
+
+                            a.x -= nx * corrA;
+                            a.y -= ny * corrA;
+                            b.x += nx * corrB;
+                            b.y += ny * corrB;
+
+                            resolveCollisionImpulse(a, b, nx, ny);
+                        }
+                    }
+                }
+            }
+
+            for (let b of blocks) {
+                const speed = Math.hypot(b.vx, b.vy);
+                if (speed > 3.0) continue;
+
+                const support = getSupportInfo(b);
+
+                if (support.totalSupport < SUPPORT_THRESHOLD) {
+                    const missingRatio = 1 - support.totalSupport;
+                    b.vy += GRAVITY * SUPPORT_GRAVITY * missingRatio;
+
+                    if (support.supportedCount > 0) {
+                        const dx = support.supportCenterX - b.x;
+                        const slideDir = Math.sign(dx);
+                        const slideMag = Math.min(Math.abs(dx) * 0.02, SLIDE_FORCE);
+                        b.vx += slideDir * slideMag;
+                    }
+                } else {
+                    if (Math.abs(b.vy) < 0.3) b.vy = 0;
+                    b.vx *= 0.95;
+                }
+            }
+
+            for (let b of blocks) {
+                if (b.x - b.w / 2 < 0) { b.x = b.w / 2; if (b.vx < 0) b.vx = Math.abs(b.vx) * 0.1; }
+                if (b.x + b.w / 2 > CW) { b.x = CW - b.w / 2; if (b.vx > 0) b.vx = -b.vx * RESTITUTION_SIDE; }
+                if (b.y - b.h / 2 < 0) { b.y = b.h / 2; if (b.vy < 0) b.vy = -b.vy * RESTITUTION_SIDE; }
+                if (b.y + b.h / 2 > CH) {
+                    b.y = CH - b.h / 2;
+                    if (b.vy > 0) {
+                        b.vy = -b.vy * RESTITUTION_GROUND;
+                        b.vx *= GROUND_FRICTION;
+                        if (Math.abs(b.vy) < 0.25) b.vy = 0;
+                    }
+                }
+            }
+
+            for (let b of blocks) {
+                if (Math.abs(b.vx) < 0.03) b.vx = 0;
+                if (Math.abs(b.vy) < 0.03) b.vy = 0;
+            }
+        }
+
+        function processRemoval() {
+            if (!removingMode) return;
+            removeFrameCounter++;
+            if (removeFrameCounter % 2 !== 0) return;
+            if (removeLeft <= 0 || blocks.length === 0) {
+                removingMode = false;
+                removeLeft = 0;
+                updateCounter();
+                return;
+            }
+            blocks.shift();
+            removeLeft--;
+            if (blocks.length === 0) {
+                removingMode = false;
+                removeLeft = 0;
+            }
+            updateCounter();
+        }
+
+        function processIdleClear() {
+            if (heldKeys.size > 0) {
+                idleFrames = 0;
+                idleClearing = false;
+                return;
+            }
+
+            if (removingMode) {
+                idleFrames = 0;
+                idleClearing = false;
+                return;
+            }
+
+            if (!idleClearing) {
+                idleFrames++;
+
+                if (idleFrames >= IDLE_THRESHOLD_FRAMES && blocks.length > 0) {
+                    idleClearing = true;
+                    idleClearCooldown = 0;
+                }
+            } else {
+                if (blocks.length === 0) {
+                    idleClearing = false;
+                    return;
+                }
+
+                idleClearCooldown++;
+                if (idleClearCooldown % 2 === 0) {
+                    blocks.shift();
+                    updateCounter();
+                }
+            }
+        }
+
+        // ---------- 绘制 ----------
+        function draw() {
+            ctx.clearRect(0, 0, CW, CH);
+            const grad = ctx.createRadialGradient(300, 200, 100, CW, CH, 800);
+            grad.addColorStop(0, '#1a2333');
+            grad.addColorStop(1, '#0b0f1a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, CW, CH);
+
+            if (boss) drawBoss();
+
+            for (let b of blocks) {
+                const x = b.x - b.w / 2, y = b.y - b.h / 2;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetY = 4;
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.roundRect(x, y, b.w, b.h, 8);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.font = 'bold 24px "Segoe UI", "Roboto", system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#0b0f1a';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.shadowBlur = 6;
+                ctx.fillText(b.char, b.x, b.y - 1);
+                ctx.shadowBlur = 0;
+            }
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            if (bossMode && boss && boss.slidingIn) {
+                ctx.font = 'bold 24px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#a29bfe';
+                ctx.shadowColor = '#6c5ce7';
+                ctx.shadowBlur = 20;
+                ctx.fillText('⚡ BOSS 出现中 ⚡', CW / 2, 80);
+                ctx.shadowBlur = 0;
+            }
+
+            if (idleClearing && blocks.length > 0) {
+                ctx.font = 'bold 20px "Segoe UI", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ffb86b';
+                ctx.shadowColor = '#ff9f1c';
+                ctx.shadowBlur = 16;
+                ctx.fillText('⏳ 空闲消除中...', CW / 2, 130);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawBoss() {
+            if (boss.x + boss.w / 2 < 0 || boss.x - boss.w / 2 > CW) return;
+
+            const x = boss.x - boss.w / 2;
+            const y = boss.y - boss.h / 2;
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 6;
+            ctx.fillStyle = boss.color;
+            ctx.beginPath();
+            ctx.roundRect(x, y, boss.w, boss.h, 14);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.strokeStyle = '#888888';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            const word = boss.word;
+            const letterWidth = boss.w / word.length;
+            const baseFontSize = Math.min(40, letterWidth * 0.75);
+
+            for (let i = 0; i < word.length; i++) {
+                const letterX = x + letterWidth * (i + 0.5);
+                const letterY = y + boss.h / 2;
+
+                ctx.font = `bold ${baseFontSize}px "Segoe UI", "Roboto", system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                if (boss.hitStatus[i]) {
+                    const highlightColors = [
+                        '#FF2E63', '#FFD93D', '#4ECDC4', '#6C5CE7',
+                        '#FF9F1C', '#2AF598', '#FF6F91', '#3A86FF'
+                    ];
+                    ctx.fillStyle = highlightColors[i % highlightColors.length];
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.shadowBlur = 14;
+                    ctx.fillText(word[i], letterX, letterY);
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.fillStyle = '#3a3a3a';
+                    ctx.fillText(word[i], letterX, letterY);
+                }
+            }
+        }
+
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x + r, y);
+            this.lineTo(x + w - r, y);
+            this.quadraticCurveTo(x + w, y, x + w, y + r);
+            this.lineTo(x + w, y + h - r);
+            this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            this.lineTo(x + r, y + h);
+            this.quadraticCurveTo(x, y + h, x, y + h - r);
+            this.lineTo(x, y + r);
+            this.quadraticCurveTo(x, y, x + r, y);
+            return this;
+        };
+
+        function animate() {
+            updateAutoFire();
+            updateBoss();
+            updatePhysics();
+            checkBossCollision();
+            processRemoval();
+            processIdleClear();
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        updateCounter();
+        updateBossCounter();
+        animate();
+    })();
+</script>
+</body>
+</html>
