@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .big {
+        width: 450px;
+        height: 90%;
+        margin: 0 auto;
+        border: rgb(234, 193, 222) 20px solid;
+
+    }
+
+    .small {
+        border: 1px solid rgb(240, 169, 216);
+        margin: 1px 2px;
+    }
+
+    ol {
+        margin: 5px;
+        border: rgb(235, 171, 218) 2px solid;
+    }
+</style>
+
+<body>
+    <div class="big">
+        <h1 style="text-align: center;">图书馆读者调查问卷</h1>
+        <p>为了能够及时了解您对图书馆的需求，提升我校图书馆文献资源建设的质量和水平，更好的为我校教学科研服务，我馆特设计了问卷调查题目如下，请协助填写，谢谢您的合作！
+        </p>
+        <form action="">
+            <div class="small">
+                <span>1.您的年级</span><br>
+                <label for="">请您选择</label>
+                <select name="" id="">
+                    <option value="">大一</option>
+                    <option value="">大二</option>
+                    <option value="">大三</option>
+                    <option value="">大四</option>
+                </select>
+            </div>
+            <div class="small">
+                <span>2.您的专业</span><br>
+                <input type="text">
+            </div>
+            <div class="small">
+                <span>3.对于图书馆的阅读环境</span><br>
+                <input type="radio" name="1">
+                <label for="">满意</label><br>
+                <input type="radio" name="1">
+                <label for="">基本满意</label><br>
+                <input type="radio" name="1">
+                <label for="">不满意</label>
+                <label for="">您的建议：</label>
+                <input type="text">
+            </div>
+            <div class="small">
+                <span>4.您到图书馆的原因是（可多选）</span><br>
+                <input type="checkbox">
+                <label for="">借阅专业图书</label><br>
+                <input type="checkbox">
+                <label for="">随便坐坐，翻翻书刊</label><br>
+                <input type="checkbox">
+                <label for="">借阅光盘</label><br>
+                <input type="checkbox">
+                <label for="">参加图书馆组织的活动</label><br>
+                <input type="checkbox">
+                <label for="">自习，复习功课</label><br>
+                <input type="checkbox">
+                <label for="">上网</label><br>
+                <input type="checkbox">
+                <label for="">检索电子文献</label><br>
+            </div>
+            <div class="small">
+                <span>5.您到图书馆的频率</span><br>
+                <input type="radio" name="2">
+                <label for="">几乎每天</label><br>
+                <input type="radio" name="2">
+                <label for="">每周1-2次</label><br>
+                <input type="radio" name="2">
+                <label for="">每月1-2次</label><br>
+                <input type="radio" name="2">
+                <label for="">几乎不去</label>
+            </div>
+            <div class="small">
+                <span>6.您对学校的建议</span><br>
+                <textarea name="" id="" placeholder="请您提出宝贵意见"></textarea>
+            </div>
+            <div class="small" style="text-align: center;">
+                <input type="submit" value="提交答案">
+                <input type="reset" value="清    空">
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

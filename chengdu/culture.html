@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜀韵·成都 | 文化数据库</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 文化数据终端样式 */
+        .terminal-box {
+            background: rgba(5, 5, 8, 0.9);
+            border-left: 4px solid var(--neon-pink);
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: inset 0 0 20px rgba(255, 0, 255, 0.1);
+        }
+        .culture-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        }
+        .culture-item:last-child {
+            border-bottom: none;
+        }
+        .culture-index {
+            color: var(--neon-yellow);
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 30px;
+            width: 50px;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+        .culture-content h4 {
+            color: var(--neon-blue);
+            font-size: 20px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        .culture-content p {
+            color: var(--text-dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        /* 扫描线动画效果 */
+        .scan-line {
+            width: 100%;
+            height: 2px;
+            background: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            margin: 20px 0;
+            opacity: 0.5;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(200px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 页头区域 -->
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">蜀</div>
+            <h1>蜀韵·成都</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">首页</a></li>
+                <li><a href="food.html">美食</a></li>
+                <li><a href="sights.html">景点</a></li>
+                <!-- 文化页面高亮 -->
+                <li><a href="culture.html" class="active">文化</a></li>
+                <li><a href="travel.html">攻略</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- 页面主体：文化数据库 -->
+    <main class="page-container">
+        <h2 class="page-title">古蜀文明代码库</h2>
+        <p class="page-subtitle">[ ACCESSING : ANCIENT_SHUS_HERITAGE ]</p>
+
+        <div class="terminal-box">
+            <div class="scan-line"></div>
+            
+            <!-- 文化项 1 -->
+            <div class="culture-item">
+                <div class="culture-index">01</div>
+                <div class="culture-content">
+                    <h4>川剧变脸 (Face-Changing)</h4>
+                    <p>国家级非物质文化遗产。在瞬息之间切换面容，犹如赛博格进行物理形态的极速重载，是视觉与神秘主义的完美结合。</p>
+                </div>
+            </div>
+
+            <!-- 文化项 2 -->
+            <div class="culture-item">
+                <div class="culture-index">02</div>
+                <div class="culture-content">
+                    <h4>蜀锦蜀绣 (Shu Brocade)</h4>
+                    <p>中国四大名锦之一。经纬交错的丝线如同精密的光纤网络，传输着两千年来古蜀大地的美学数据。</p>
+                </div>
+            </div>
+
+            <!-- 文化项 3 -->
+            <div class="culture-item">
+                <div class="culture-index">03</div>
+                <div class="culture-content">
+                    <h4>茶馆文化 (Teahouse Culture)</h4>
+                    <p>盖碗茶的碰撞声是成都特有的低频白噪音。在这里，时间被按下暂停键，是抵抗快节奏现代社会的慢生活防火墙。</p>
+                </div>
+            </div>
+
+            <!-- 文化项 4 -->
+            <div class="culture-item">
+                <div class="culture-index">04</div>
+                <div class="culture-content">
+                    <h4>三星堆遗址 (Sanxingdui Ruins)</h4>
+                    <p>沉睡数千年，一醒惊天下。青铜神树与纵目面具，仿佛是外星文明遗留在地球的远古科技终端，等待被重新激活。</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 页脚区域 -->
+    <footer>
+        <p>© 2077 蜀韵·成都文化旅游宣传网 | SYSTEM ONLINE // ALL RIGHTS RESERVED</p>
+    </footer>
+
+</body>
+</html>

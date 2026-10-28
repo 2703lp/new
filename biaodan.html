@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="">
+        <label for="xingm">姓名：</label>
+        <input type="text" name="xingm" placeholder="请输入真实姓名"><br>
+        <label for="xingbie">女：</label>
+        <input type="radio" name="xingbie" value="男">
+        <label for="xingbie">男：</label>
+        <input type="radio" name="xingbie" value="女"><br>
+        <label for="">日期:</label>
+        <input type="date"><br>
+        <label for="">学历</label>
+        <select name="" id="">
+            <option value="1">小学</option>
+            <option value="2">初中</option>
+            <option value="3">高中</option>
+            <option value="4">大学</option>
+            <option value="5">硕士</option>
+            <option value="6">博士</option>
+        </select><br>
+        <label for="">电话号码：</label>
+<input type="text" pattern="1[3,5,8,9][0-9]{9}" id="phoneNum"><br>
+<label for="">密码：</label>
+<input type="password" placeholder="最少6位密码"><br>
+<label for="">自我介绍</label>
+<textarea name="自我介绍" id="">请输入...</textarea><br>
+<label for="">上传你的自拍</label>
+<input type="file"><br>
+<input type="submit" onclick="getPhone()">
+    </form>
+</body>
+<script>
+    function getPhone(){
+        const phone = document.getElementById("phoneNum").value.trim()
+    
+    console.log(phone)
+    }
+</script>
+</html>

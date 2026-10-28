@@ -1,0 +1,449 @@
+/* ================= 引入科技感字体 ================= */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap');
+
+/* ================= 全局重置与变量定义 ================= */
+:root {
+    --neon-blue: #00f3ff;    /* 赛博蓝 */
+    --neon-pink: #ff00ff;    /* 霓虹粉 */
+    --neon-yellow: #fcee0a;  /* 赛博黄 */
+    --bg-dark: #050508;      /* 暗黑背景 */
+    --bg-panel: rgba(10, 10, 15, 0.85); /* 半透明面板 */
+    --text-main: #e0e0e0;    /* 主文字色 */
+    --text-dim: #8b8b9e;     /* 暗文字色 */
+    --font-tech: 'Orbitron', 'Rajdhani', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    /* 绘制赛博朋克经典透视网格背景 */
+    background-image: 
+        linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    color: var(--text-main);
+    font-family: var(--font-tech);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ================= 页头 Header ================= */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    background-color: rgba(5, 5, 8, 0.9);
+    border-bottom: 2px solid var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* 赛博风格 Logo */
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background-color: transparent;
+    border: 2px solid var(--neon-pink);
+    color: var(--neon-pink);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.5), 0 0 15px rgba(255, 0, 255, 0.5);
+    text-shadow: 0 0 5px var(--neon-pink);
+}
+
+h1 {
+    font-size: 28px;
+    letter-spacing: 5px;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.8);
+}
+
+/* 导航栏 */
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+nav a:hover, 
+nav a.active {
+    color: var(--neon-yellow);
+    text-shadow: 0 0 10px var(--neon-yellow);
+}
+
+nav a::before {
+    content: '[';
+    position: absolute;
+    left: -15px;
+    opacity: 0;
+    transition: 0.3s;
+    color: var(--neon-yellow);
+}
+nav a::after {
+    content: ']';
+    position: absolute;
+    right: -15px;
+    opacity: 0;
+    transition: 0.3s;
+    color: var(--neon-yellow);
+}
+
+nav a:hover::before, nav a:hover::after,
+nav a.active::before, nav a.active::after {
+    opacity: 1;
+}
+
+/* ================= 页脚 Footer ================= */
+footer {
+    text-align: center;
+    padding: 30px;
+    background-color: #000;
+    border-top: 1px solid rgba(255, 0, 255, 0.3);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    margin-top: 50px;
+}
+
+/* ================= 通用页面容器 ================= */
+.page-container {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.page-title {
+    color: var(--neon-blue);
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 5px;
+    text-shadow: 0 0 15px var(--neon-blue);
+}
+
+.page-subtitle {
+    text-align: center;
+    color: var(--neon-pink);
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+/* ================= 首页专属样式 (Banner) ================= */
+.banner {
+    height: 75vh; /* 修复：调整高度，避免过于拥挤 */
+    position: relative;
+    overflow: hidden;
+    border-bottom: 2px solid var(--neon-blue);
+}
+
+/* 轮播图 */
+.slider {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    /* 修复：去掉过度的色相旋转，保留对比度让图片清晰 */
+    filter: contrast(1.1); 
+    animation: fadeAnimation 15s infinite; 
+}
+
+.slide1 { 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd1.webp'); 
+    animation-delay: 0s; 
+}
+.slide2 { 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd2.webp'); 
+    animation-delay: 5s; 
+}
+.slide3 { 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd3.webp'); 
+    animation-delay: 10s; 
+}
+.slide3 { 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd4.webp'); 
+    animation-delay: 10s; 
+}
+
+@keyframes fadeAnimation {
+    0% { opacity: 0; transform: scale(1.02); }
+    5% { opacity: 1; }
+    33% { opacity: 1; transform: scale(1); }
+    38% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/* Banner 文字（故障风 Glitch 特效） */
+.banner-text {
+    position: absolute;
+    top: 45%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 100%;
+    z-index: 10;
+}
+
+.banner-text h2 {
+    font-size: 60px;
+    color: #fff;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+    animation: glitch 3s infinite;
+}
+
+@keyframes glitch {
+    0% { text-shadow: 2px 0 var(--neon-pink), -2px 0 var(--neon-blue); }
+    10% { text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-blue); }
+    20% { text-shadow: 2px 0 var(--neon-pink), -2px 0 var(--neon-blue); }
+    30% { text-shadow: 0 0 10px var(--neon-blue); }
+    100% { text-shadow: 0 0 10px var(--neon-blue); }
+}
+
+.banner-text p {
+    font-size: 22px;
+    color: var(--neon-yellow);
+    letter-spacing: 3px;
+    text-shadow: 0 0 8px rgba(252, 238, 10, 0.6);
+}
+
+/* ================= 首页视频与介绍面板 ================= */
+.content-section {
+    max-width: 1000px;
+    /* 修复：取消负边距，防止遮挡上方轮播图 */
+    margin: 60px auto; 
+    background: var(--bg-panel);
+    padding: 40px;
+    position: relative;
+    z-index: 10;
+    /* 赛博朋克切角边框 */
+    clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+}
+
+/* 模拟全息扫描线 */
+.content-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0, 243, 255, 0.05) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+}
+
+.video-wrapper {
+    width: 100%;
+    margin-bottom: 40px;
+    border: 2px solid var(--neon-pink);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+}
+
+video {
+    width: 100%;
+    display: block;
+}
+
+.intro-text h3 {
+    color: var(--neon-blue);
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.intro-text p {
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    line-height: 2;
+    text-indent: 2em;
+    text-align: justify;
+}
+
+/* ================= 攻略页表格样式 (travel.html) ================= */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(10, 10, 15, 0.8);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+    border: 1px solid var(--neon-blue);
+}
+
+.modern-table th, 
+.modern-table td {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+    border-right: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+.modern-table th {
+    background-color: rgba(0, 243, 255, 0.1);
+    color: var(--neon-blue);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+.modern-table td {
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modern-table tbody tr {
+    transition: all 0.3s ease;
+}
+.modern-table tbody tr:hover {
+    background-color: rgba(255, 0, 255, 0.1);
+    box-shadow: inset 0 0 15px rgba(255, 0, 255, 0.2);
+    transform: scale(1.01);
+}
+
+/* ================= 景点页网格卡片 (sights.html) ================= */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.spot-card {
+    background: rgba(10, 10, 15, 0.8);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    padding: 25px;
+    position: relative;
+    transition: all 0.3s ease;
+    /* 赛博切角 */
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.spot-card:hover {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    transform: translateY(-5px);
+}
+
+.spot-card h3 {
+    color: var(--neon-blue);
+    font-size: 22px;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed rgba(0, 243, 255, 0.3);
+    padding-bottom: 10px;
+    text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+}
+
+.spot-card p {
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.spot-card .data-tag {
+    position: absolute;
+    bottom: 15px;
+    right: 20px;
+    color: var(--neon-pink);
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+/* ================= 文化页终端列表 (culture.html) ================= */
+.terminal-box {
+    background: rgba(5, 5, 8, 0.9);
+    border-left: 4px solid var(--neon-pink);
+    padding: 30px;
+    margin-top: 40px;
+    box-shadow: inset 0 0 20px rgba(255, 0, 255, 0.1);
+}
+
+.culture-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+.culture-item:last-child {
+    border-bottom: none;
+}
+
+.culture-index {
+    color: var(--neon-yellow);
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: 30px;
+    width: 50px;
+    text-shadow: 0 0 10px var(--neon-yellow);
+}
+
+.culture-content h4 {
+    color: var(--neon-blue);
+    font-size: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+}
+
+.culture-content p {
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.scan-line {
+    width: 100%;
+    height: 2px;
+    background: var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue);
+    margin: 20px 0;
+    opacity: 0.5;
+    animation: scan 4s linear infinite;
+}
+
+@keyframes scan {
+    0% { transform: translateY(-100px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(200px); opacity: 0; }
+}

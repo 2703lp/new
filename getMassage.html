@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .all {
+        width: 850px;
+        height: 90%;
+        margin: 0 auto;
+    }
+
+    .big {
+        border: 20px solid rgb(189, 188, 188);
+        margin: 30px;
+    }
+
+    span {
+        color: red;
+    }
+
+    label {
+        color: green;
+    }
+</style>
+
+<body>
+
+    <div class="big">
+        <h2 style="margin-left: 20px;color: blue;">留言板</h2>
+        <form action="" style="align-items: center;">
+
+            <div class="all">
+                <h4 style="text-align: center;color: blue;">科技工作者建言</h4>
+                <p style="color: red;">发表留言</p>
+                <div style="margin-left: 20px;">
+                    <label for="">姓&emsp;&emsp;名：</label>
+                    <input type="text" style="width: 100px;"><br>
+                    <label for="">电子邮件：</label>
+                    <input type="email" style="width: 375px;"><br>
+                    <label for="">分类&emsp;</label>
+                    <span>科技工作者留言&emsp;</span>
+                    <input type="radio" name="1">
+                    <span for="">不保密&emsp;</span>
+                    <input type="radio" name="1">
+                    <span for="">保密&emsp;</span>
+                    <span for="">留言类型：</span>
+                    <select name="" id="">
+                        <option value=""></option>
+                        <option value="">1</option>
+                        <option value="">1</option>
+                    </select>
+                    <div style="display: flex;align-items: center;margin:5px 0; ">
+                        <label>留言：</label>
+                        <textarea name="" id="" style="width: 410px;height: 150px;"></textarea>
+                    </div>
+                </div>
+                <div style="color: blue;">注：如果您的留言不便公开，请选择"保密"选项，提交后可凭系统反馈给您的留言编号、查询密码和您的姓名查询回复。
+
+                </div>
+                <div style="text-align: center;margin-top: 20px;">
+                    <input type="submit">
+                    <input type="reset">
+                </div>
+                <div style="color: blue;">
+                    <ul>
+                        <li>请遵守国家有关法律、法规，尊重网上道德，承担一切因您的行为而直接或间接引起的法律责任。</li>
+                        <li>本网站拥有管理笔名和留言的一切权利。</li>
+                    </ul>
+                </div>
+
+
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

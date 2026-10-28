@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL 常见存储引擎可视化对比</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2333;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --innodb: #58a6ff;
+  --myisam: #f59e0b;
+  --memory: #bc8cff;
+  --archive: #3fb950;
+  --csv: #39d2c0;
+  --danger: #f85149;
+  --radius: 12px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 36px 22px 70px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+
+/* Header */
+.page-header { text-align: center; margin-bottom: 44px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
+.page-header h1 {
+  font-size: 2rem; font-weight: 750; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--innodb), var(--memory), var(--csv));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 10px;
+}
+.page-header .sub { color: var(--text2); font-size: 0.9rem; }
+
+/* Section */
+.section { margin-bottom: 46px; }
+.section-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 9px; }
+.section-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--innodb); flex-shrink: 0; }
+.section-desc { color: var(--text2); font-size: 0.83rem; margin-bottom: 20px; padding-left: 16px; }
+
+/* Chart cards */
+.chart-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; }
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.chart-card h3 { font-size: 0.88rem; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.chart-canvas { width: 100%; height: 380px; }
+
+/* Scenario cards */
+.scene-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.scene-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; position: relative; overflow: hidden; transition: transform 0.18s, border-color 0.18s;
+}
+.scene-card:hover { transform: translateY(-2px); border-color: var(--innodb); }
+.scene-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+.scene-card[data-db="innodb"]::before { background: var(--innodb); }
+.scene-card[data-db="myisam"]::before { background: var(--myisam); }
+.scene-card[data-db="memory"]::before { background: var(--memory); }
+.scene-card[data-db="archive"]::before { background: var(--archive); }
+.scene-card[data-db="csv"]::before { background: var(--csv); }
+.scene-card .eng-name { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+.scene-card .eng-tagline { font-size: 0.72rem; color: var(--text2); margin-bottom: 12px; }
+.scene-card .scene-list { list-style: none; font-size: 0.8rem; }
+.scene-card .scene-list li { padding: 4px 0; color: var(--text2); display: flex; align-items: flex-start; gap: 6px; }
+.scene-card .scene-list li::before { content: '›'; color: var(--innodb); font-weight: 700; flex-shrink: 0; }
+.scene-card[data-db="myisam"] .scene-list li::before { color: var(--myisam); }
+.scene-card[data-db="memory"] .scene-list li::before { color: var(--memory); }
+.scene-card[data-db="archive"] .scene-list li::before { color: var(--archive); }
+.scene-card[data-db="csv"] .scene-list li::before { color: var(--csv); }
+.scene-card .limitation { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--danger); }
+
+/* Decision flow */
+.flow {
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.flow-step {
+  flex: 1; min-width: 170px; padding: 18px 16px; position: relative;
+  border-right: 1px solid var(--border);
+}
+.flow-step:last-child { border-right: none; }
+.flow-step .step-q { font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.flow-step .step-a { font-size: 0.76rem; color: var(--text2); }
+.flow-step .step-a strong { color: var(--csv); }
+.flow-step .step-a .or { display: block; margin-top: 4px; color: var(--text2); font-size: 0.7rem; }
+.flow-step .step-a .alt { color: var(--myisam); font-weight: 600; }
+
+/* mini table */
+.mini-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.mini-table th, .mini-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.mini-table th { color: var(--text2); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.4px; }
+.mini-table tbody tr:last-child td { border-bottom: none; }
+.mini-table tbody tr:hover { background: rgba(88,166,255,0.03); }
+.yes { color: var(--archive); font-weight: 600; }
+.no { color: var(--danger); }
+.partial { color: var(--myisam); }
+
+.footer { text-align: center; padding-top: 28px; border-top: 1px solid var(--border); color: var(--text2); font-size: 0.75rem; }
+
+@media (max-width: 860px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .flow-step { border-right: none; border-bottom: 1px solid var(--border); }
+  .flow-step:last-child { border-bottom: none; }
+  .page-header h1 { font-size: 1.45rem; }
+  body { padding: 22px 12px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <h1>MySQL 常见存储引擎可视化对比</h1>
+    <p class="sub">InnoDB · MyISAM · MEMORY · ARCHIVE · CSV — 核心差异与选型参考</p>
+  </header>
+
+  <!-- 1. 特性矩阵 + 量化对比 -->
+  <section class="section">
+    <div class="section-title"><span class="dot"></span>核心特性支持矩阵</div>
+    <p class="section-desc">支持状态一目了然：事务、外键、行级锁、全文索引、哈希索引、数据压缩</p>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>特性支持热力矩阵</h3>
+        <div id="matrixChart" class="chart-canvas"></div>
+      </div>
+      <div class="chart-card">
+        <h3>锁粒度与持久性</h3>
+        <div id="lockChart" class="chart-canvas"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 场景卡片 -->
+  <section class="section">
+    <div class="section-title"><span class="dot"></span>场景定位速查</div>
+    <p class="section-desc">每个引擎都有自己的“最佳位置”，选错场景往往意味着不必要的代价</p>
+    <div class="scene-grid" id="sceneGrid"></div>
+  </section>
+
+  <!-- 3. 量化对比表 -->
+  <section class="section">
+    <div class="section-title"><span class="dot"></span>关键指标对照</div>
+    <p class="section-desc">从锁粒度、索引能力到存储限制的快速对照</p>
+    <div class="chart-card" style="padding:0; overflow:hidden;">
+      <table class="mini-table" id="metricTable"></table>
+    </div>
+  </section>
+
+  <!-- 4. 选型决策流 -->
+  <section class="section">
+    <div class="section-title"><span class="dot"></span>选型决策路径</div>
+    <p class="section-desc">从最关键的“是否需要事务”出发，逐步收窄选择</p>
+    <div class="flow" id="decisionFlow"></div>
+  </section>
+
+  <div class="footer">数据依据 MySQL 8.4 官方参考手册及各引擎公开文档整理 · 仅作选型参考</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// 数据
+// ═══════════════════════════════════════════
+const engines = [
+  { key:'innodb', name:'InnoDB', color:'#58a6ff', tagline:'默认引擎 · OLTP 首选',
+    txn:1, rowLock:1, fk:1, fulltext:1, hash:0, compress:0,
+    lock:'行级', persistent:'持久',
+    scenes:['高并发 OLTP','电商交易','金融核心','需要回滚/崩溃恢复的系统'],
+    limit:'无事务需求的极简只读场景下，开销略高于 MyISAM',
+    storage:'64TB', idx:'B+树 / 自适应哈希 / 全文' },
+  { key:'myisam', name:'MyISAM', color:'#f59e0b', tagline:'历史默认 · 读密集',
+    txn:0, rowLock:0, fk:0, fulltext:1, hash:0, compress:1,
+    lock:'表级', persistent:'持久',
+    scenes:['读多写少','静态数据/报表','全文搜索（旧版本）','简单备份'],
+    limit:'表锁导致高并发写性能急剧下降；不支持事务与崩溃恢复',
+    storage:'256TB', idx:'B+树 / 全文' },
+  { key:'memory', name:'MEMORY', color:'#bc8cff', tagline:'内存 · 临时数据',
+    txn:0, rowLock:0, fk:0, fulltext:0, hash:1, compress:0,
+    lock:'表级', persistent:'重启丢失',
+    scenes:['会话/缓存','临时中间结果','快速查找表','只读缓存'],
+    limit:'数据不持久；表锁限制并发写；不支持变长字段（BLOB/TEXT）',
+    storage:'受 RAM 限制', idx:'哈希 / B+树' },
+  { key:'archive', name:'ARCHIVE', color:'#3fb950', tagline:'归档 · 高压缩',
+    txn:0, rowLock:1, fk:0, fulltext:0, hash:0, compress:1,
+    lock:'行级', persistent:'持久',
+    scenes:['日志归档','历史流水','只写/只读的大数据量存储'],
+    limit:'仅支持 INSERT/REPLACE/SELECT；不支持 DELETE/UPDATE；无通用索引',
+    storage:'无限制', idx:'仅 AUTO_INCREMENT 列' },
+  { key:'csv', name:'CSV', color:'#39d2c0', tagline:'文件交换 · 极简',
+    txn:0, rowLock:0, fk:0, fulltext:0, hash:0, compress:0,
+    lock:'无', persistent:'持久',
+    scenes:['数据导入/导出','与外部系统交换','电子表格直读'],
+    limit:'无索引（含主键）、无事务、所有列 NOT NULL、全表扫描',
+    storage:'文件系统限制', idx:'不支持' }
+];
+
+// ═══════════════════════════════════════════
+// 1. 特性矩阵（热力图）
+// ═══════════════════════════════════════════
+(function renderMatrix() {
+  const chart = echarts.init(document.getElementById('matrixChart'));
+  const features = ['事务', '行级锁', '外键', '全文索引', '哈希索引', '数据压缩'];
+  const data = [];
+  engines.forEach((eng, ei) => {
+    const vals = [eng.txn, eng.rowLock, eng.fk, eng.fulltext, eng.hash, eng.compress];
+    vals.forEach((v, fi) => {
+      data.push({
+        value: [fi, ei, v],
+        itemStyle: {
+          color: v === 1 ? eng.color : '#21262d',
+          opacity: v === 1 ? 0.85 : 0.6,
+          borderColor: '#0d1117',
+          borderWidth: 1
+        }
+      });
+    });
+  });
+  chart.setOption({
+    tooltip: {
+      formatter: p => {
+        const eng = engines[p.data.value[1]];
+        const feat = features[p.data.value[0]];
+        return `<b>${eng.name}</b> · ${feat}<br/>${p.data.value[2] === 1 ? '✅ 支持' : '— 不支持'}`;
+      }
+    },
+    grid: { left: 90, right: 20, top: 20, bottom: 40 },
+    xAxis: {
+      type: 'category', data: features, position: 'bottom',
+      axisLabel: { color: '#8b949e', fontSize: 11 },
+      axisLine: { lineStyle: { color: '#30363d' } },
+      splitArea: { show: false }
+    },
+    yAxis: {
+      type: 'category', data: engines.map(e => e.name),
+      axisLabel: { color: '#e6edf3', fontSize: 11, fontWeight: 600 },
+      axisLine: { lineStyle: { color: '#30363d' } }
+    },
+    series: [{
+      type: 'heatmap',
+      data: data,
+      label: {
+        show: true,
+        formatter: p => p.data.value[2] === 1 ? '●' : '—',
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 700
+      },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(88,166,255,0.3)' } }
+    }]
+  });
+  window.addEventListener('resize', () => chart.resize());
+})();
+
+// ═══════════════════════════════════════════
+// 2. 锁粒度与持久性条形图
+// ═══════════════════════════════════════════
+(function renderLock() {
+  const chart = echarts.init(document.getElementById('lockChart'));
+  const names = engines.map(e => e.name);
+  const lockScore = engines.map(e => e.lock === '行级' ? 3 : e.lock === '表级' ? 2 : 1);
+  const lockColors = { '行级': '#3fb950', '表级': '#f59e0b', '无': '#8b949e' };
+  const persistScore = engines.map(e => e.persistent === '持久' ? 3 : e.persistent === '重启丢失' ? 1 : 2);
+
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis', axisPointer: { type: 'shadow' },
+      formatter: params => {
+        const eng = engines[params[0].dataIndex];
+        return `<b>${eng.name}</b><br/>锁粒度：${eng.lock}<br/>持久性：${eng.persistent}`;
+      }
+    },
+    legend: { bottom: 0, textStyle: { color: '#8b949e', fontSize: 10 }, itemWidth: 10, itemHeight: 8, icon: 'roundRect' },
+    grid: { left: '3%', right: '6%', bottom: '20%', top: '6%', containLabel: true },
+    xAxis: {
+      type: 'category', data: names,
+      axisLabel: { color: '#8b949e', fontSize: 10, rotate: 15 },
+      axisLine: { lineStyle: { color: '#30363d' } }, axisTick: { show: false }
+    },
+    yAxis: {
+      type: 'value', max: 3, min: 0,
+      axisLabel: {
+        color: '#8b949e', fontSize: 10,
+        formatter: v => v === 3 ? '高' : v === 2 ? '中' : v === 1 ? '低' : ''
+      },
+      splitLine: { lineStyle: { color: '#21262d' } }
+    },
+    series: [
+      {
+        name: '锁粒度（越高并发越友好）',
+        type: 'bar', data: lockScore, barWidth: 20,
+        itemStyle: {
+          borderRadius: [4,4,0,0],
+          color: p => lockColors[engines[p.dataIndex].lock]
+        },
+        label: { show: true, position: 'top', color: '#8b949e', fontSize: 9, formatter: p => engines[p.dataIndex].lock }
+      },
+      {
+        name: '持久性',
+        type: 'bar', data: persistScore, barWidth: 20,
+        itemStyle: {
+          borderRadius: [4,4,0,0],
+          color: p => engines[p.dataIndex].persistent === '持久' ? '#58a6ff' : engines[p.dataIndex].persistent === '重启丢失' ? '#f85149' : '#bc8cff'
+        },
+        label: { show: true, position: 'top', color: '#8b949e', fontSize: 9, formatter: p => engines[p.dataIndex].persistent }
+      }
+    ]
+  });
+  window.addEventListener('resize', () => chart.resize());
+})();
+
+// ═══════════════════════════════════════════
+// 3. 场景卡片
+// ═══════════════════════════════════════════
+(function renderScenes() {
+  const el = document.getElementById('sceneGrid');
+  el.innerHTML = engines.map(e => `
+    <div class="scene-card" data-db="${e.key}">
+      <div class="eng-name" style="color:${e.color}">${e.name}</div>
+      <div class="eng-tagline">${e.tagline}</div>
+      <ul class="scene-list">${e.scenes.map(s => `<li>${s}</li>`).join('')}</ul>
+      <div class="limitation">⚠ ${e.limit}</div>
+    </div>
+  `).join('');
+})();
+
+// ═══════════════════════════════════════════
+// 4. 量化对比表
+// ═══════════════════════════════════════════
+(function renderTable() {
+  const t = document.getElementById('metricTable');
+  const rows = engines.map(e => `
+    <tr>
+      <td style="font-weight:700; color:${e.color}">${e.name}</td>
+      <td class="${e.txn?'yes':'no'}">${e.txn?'✓ 支持':'✗ 不支持'}</td>
+      <td>${e.lock}</td>
+      <td class="${e.fulltext?'yes':'no'}">${e.fulltext?'✓':'—'}</td>
+      <td class="${e.compress?'yes':'no'}">${e.compress?'✓':'—'}</td>
+      <td>${e.storage}</td>
+      <td style="font-size:0.72rem; color:var(--text2)">${e.idx}</td>
+    </tr>
+  `).join('');
+  t.innerHTML = `
+    <thead><tr>
+      <th>引擎</th><th>事务</th><th>锁粒度</th><th>全文索引</th><th>压缩</th><th>存储限制</th><th>索引类型</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  `;
+})();
+
+// ═══════════════════════════════════════════
+// 5. 决策流
+// ═══════════════════════════════════════════
+(function renderFlow() {
+  const steps = [
+    { q: '① 需要事务 / 回滚 / 崩溃恢复？', a: '<strong>是 → InnoDB</strong>', or: '<span class="alt">否 ↓</span>' },
+    { q: '② 数据能否容忍重启丢失？', a: '<strong>否 → InnoDB</strong>', or: '<span class="alt">是 → MEMORY</span>' },
+    { q: '③ 写入后还需要 UPDATE / DELETE？', a: '<strong>否 → ARCHIVE</strong>', or: '<span class="alt">是 ↓</span>' },
+    { q: '④ 需要与外部文件直接交换？', a: '<strong>是 → CSV</strong>', or: '<span class="alt">否 ↓</span>' },
+    { q: '⑤ 读多写少且无需事务？', a: '<strong>是 → MyISAM</strong>', or: '<span class="alt">重新评估 InnoDB</span>' }
+  ];
+  document.getElementById('decisionFlow').innerHTML = steps.map(s => `
+    <div class="flow-step">
+      <div class="step-q">${s.q}</div>
+      <div class="step-a">${s.a}<span class="or">${s.or}</span></div>
+    </div>
+  `).join('');
+})();
+</script>
+</body>
+</html>
