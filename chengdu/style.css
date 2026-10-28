@@ -21,7 +21,7 @@
 
 body {
     background-color: var(--bg-dark);
-    /* 绘制赛博朋克经典透视网格背景 */
+    /* 赛博朋克经典透视网格背景 */
     background-image: 
         linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
@@ -160,7 +160,7 @@ footer {
 
 /* ================= 首页专属样式 (Banner) ================= */
 .banner {
-    height: 75vh; /* 修复：调整高度，避免过于拥挤 */
+    height: 75vh; 
     position: relative;
     overflow: hidden;
     border-bottom: 2px solid var(--neon-blue);
@@ -173,26 +173,25 @@ footer {
     background-size: cover;
     background-position: center;
     opacity: 0;
-    /* 修复：去掉过度的色相旋转，保留对比度让图片清晰 */
-    filter: contrast(1.1); 
+    filter: contrast(1.1); /* 保留原图清晰度 */
     animation: fadeAnimation 15s infinite; 
 }
 
 .slide1 { 
-    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd1.webp'); 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cdd1.webp'); 
     animation-delay: 0s; 
 }
 .slide2 { 
-    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd2.webp'); 
-    animation-delay: 5s; 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cdd2.webp'); 
+    animation-delay: 3s; 
 }
 .slide3 { 
-    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd3.webp'); 
-    animation-delay: 10s; 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cdd3.webp'); 
+    animation-delay: 6s; 
 }
 .slide3 { 
-    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cd4.webp'); 
-    animation-delay: 10s; 
+    background-image: linear-gradient(rgba(5, 5, 8, 0.3), rgba(5, 5, 8, 0.7)), url('/img/cdd4.webp'); 
+    animation-delay: 9s; 
 }
 
 @keyframes fadeAnimation {
@@ -239,16 +238,14 @@ footer {
     text-shadow: 0 0 8px rgba(252, 238, 10, 0.6);
 }
 
-/* ================= 首页视频与介绍面板 ================= */
+/* ================= 首页面板 (视频与音频区) ================= */
 .content-section {
     max-width: 1000px;
-    /* 修复：取消负边距，防止遮挡上方轮播图 */
-    margin: 60px auto; 
+    margin: 60px auto; /* 正常间距，避免遮挡 */
     background: var(--bg-panel);
     padding: 40px;
     position: relative;
     z-index: 10;
-    /* 赛博朋克切角边框 */
     clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
     border: 1px solid rgba(0, 243, 255, 0.3);
     box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
@@ -266,7 +263,7 @@ footer {
 
 .video-wrapper {
     width: 100%;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     border: 2px solid var(--neon-pink);
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
 }
@@ -274,6 +271,49 @@ footer {
 video {
     width: 100%;
     display: block;
+}
+
+/* 新增：背景音乐模块样式 */
+.audio-wrapper {
+    margin-bottom: 40px;
+    background: rgba(0, 243, 255, 0.05);
+    border: 1px dashed rgba(0, 243, 255, 0.5);
+    padding: 15px 20px;
+    border-radius: 4px;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+}
+
+.audio-title {
+    color: var(--neon-blue);
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.blink-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--neon-blue);
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 0 8px var(--neon-blue);
+    animation: blink 1s infinite alternate;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
+
+.audio-wrapper audio {
+    width: 100%;
+    height: 40px;
+    outline: none;
+    filter: invert(100%) hue-rotate(180deg) brightness(1.5) contrast(1.2);
 }
 
 .intro-text h3 {
@@ -354,7 +394,6 @@ video {
     padding: 25px;
     position: relative;
     transition: all 0.3s ease;
-    /* 赛博切角 */
     clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
 }
 
@@ -446,4 +485,74 @@ video {
     0% { transform: translateY(-100px); opacity: 0; }
     50% { opacity: 1; }
     100% { transform: translateY(200px); opacity: 0; }
+}
+/* ================= 美食页图片墙样式 (food.html) ================= */
+.food-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+/* 单个美食卡片 */
+.food-card {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 243, 255, 0.4);
+    /* 赛博切角 */
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+/* 图片样式及缩放动画 */
+.food-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    /* 默认降低亮度，更有质感 */
+    filter: brightness(0.7) contrast(1.1); 
+}
+
+/* 卡片底部文字渐变遮罩 */
+.food-card .food-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px 20px 20px;
+    background: linear-gradient(to top, rgba(5, 5, 8, 0.95), transparent);
+    box-sizing: border-box;
+}
+
+.food-info h3 {
+    color: var(--neon-blue);
+    font-size: 20px;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+}
+
+.food-info p {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* 悬停交互效果 */
+.food-card:hover {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+}
+
+.food-card:hover img {
+    transform: scale(1.1); /* 图片轻微放大 */
+    filter: brightness(1) contrast(1.2); /* 亮度恢复 */
+}
+
+.food-card:hover .food-info h3 {
+    color: var(--neon-yellow);
+    text-shadow: 0 0 10px var(--neon-yellow);
 }

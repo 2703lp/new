@@ -5,51 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>蜀韵·成都 | 景点坐标</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* 景点卡片专属样式 */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-        .spot-card {
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            padding: 25px;
-            position: relative;
-            transition: all 0.3s ease;
-            /* 赛博切角 */
-            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-        }
-        .spot-card:hover {
-            border-color: var(--neon-pink);
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
-            transform: translateY(-5px);
-        }
-        .spot-card h3 {
-            color: var(--neon-blue);
-            font-size: 22px;
-            margin-bottom: 15px;
-            border-bottom: 1px dashed rgba(0, 243, 255, 0.3);
-            padding-bottom: 10px;
-            text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-        }
-        .spot-card p {
-            color: var(--text-dim);
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 16px;
-            line-height: 1.8;
-        }
-        .spot-card .data-tag {
-            position: absolute;
-            bottom: 15px;
-            right: 20px;
-            color: var(--neon-pink);
-            font-size: 12px;
-            letter-spacing: 2px;
-        }
-    </style>
 </head>
 <body>
 
@@ -103,6 +58,20 @@
                 <h3>锦里古街</h3>
                 <p>以明末清初川西民居作外衣，三国文化与成都民俗作内涵，夜晚的红灯笼与霓虹交织，是体验古老与未来碰撞的虚拟现实区。</p>
                 <span class="data-tag">VR_ZONE: JINLI_ALLEY</span>
+            </div>
+
+            <!-- 新增：景点卡片 5 -->
+            <div class="spot-card">
+                <h3>杜甫草堂</h3>
+                <p>中国唐代大诗人杜甫流寓成都时的故居。这里保存着海量的“盛唐诗歌数据”，是当代人跨越时空与诗圣建立精神链接的静音节点。</p>
+                <span class="data-tag">POETRY_NODE: DU_FU</span>
+            </div>
+
+            <!-- 新增：景点卡片 6 -->
+            <div class="spot-card">
+                <h3>青城山</h3>
+                <p>中国道教发源地之一，群峰环绕起伏、林木葱茏幽翠。这里高浓度的负氧离子构成了天然的“生态防火墙”，屏蔽城市的喧嚣。</p>
+                <span class="data-tag">ECO_SYS: QINGCHENG</span>
             </div>
         </div>
     </main>
